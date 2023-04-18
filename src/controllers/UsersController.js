@@ -6,21 +6,28 @@ const sqliteConnections = require("../database/sqlite");
 class UsersController {
     
     async create(request, response) {
-        const { name, email, password } = request.body;
+        const { name, email, password, cpf, phone, password_confirmation } = request.body;
 
         const database = await sqliteConnections();
         const checkUserExists = await database.get("SELECT * FROM users WHERE email = (?)", [email]);
-
-        console.log("Este e-mail já está em uso.");
+        const checkCpfExists = await database.get("SELECT * FROM users WHERE cpf = (?)", [cpf]);
 
         if (checkUserExists) {
             throw new AppError("Este e-mail já está em uso.");
         }
 
-        const hashedPassword = await hash(password, 8);
+        if (checkCpfExists) {
+            throw new AppError("Este CPF já está em uso.");
+        }
 
+        if (password !== password_confirmation) {
+            throw new AppError("As senhas não conferem.");
+        }
+
+        const hashedPassword = await hash(password, 8);
+        
         await database.run(
-            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [name, email, hashedPassword]
+            "INSERT INTO users (name, email, password, cpf, phone) VALUES (?, ?, ?, ?, ?)", [name, email, hashedPassword, cpf, phone]
         );
 
         return response.status(201).json();

@@ -3,6 +3,8 @@ exports.up = knex => knex.schema.createTable("users", table => {
   table.varchar("name");
   table.varchar("email");
   table.varchar("password");
+  table.integer("cpf");
+  table.varchar("phone");
   table.varchar("avatar").nullable();
 
   table.timestamp("created_at").default(knex.fn.now());
